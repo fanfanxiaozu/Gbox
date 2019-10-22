@@ -24,7 +24,7 @@ final class DynamicBoxSpec {
     static Component onCreateLayout(ComponentContext c,
                                     @Prop Document layout,
                                     @Prop(optional = true) Object bind) {
-        return BuildContext.build(c, layout, bind);
+        return BuildContext.buildLayout(c, layout, bind);
     }
 
     @OnEvent(VisibleEvent.class)

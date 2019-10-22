@@ -59,14 +59,22 @@ class BuildContext(
         } catch (e: IllegalArgumentException) {
             @Suppress("UNCHECKED_CAST")
             return scope(colorNameMap) {
-                getValue(expr, Int::class.java)
+                parseColor(getValue(expr, String::class.java))
             }
         }
     }
 
     companion object {
 
-        private val colorNameMap = ArrayMap<String, Any>()
+        private val colorNameMap = object: ArrayMap<String, Any>() {
+            override fun put(key: String?, value: Any?): Any? {
+                return super.put(key, when (value) {
+                    is Int -> "#" + value.toString(16)
+                    is Long -> "#" + value.toInt().toString(16)
+                    else -> throw AssertionError()
+                })
+            }
+        }
 
         private val functions: List<Method> = Func::class.java.declaredMethods
                 .filter {
@@ -102,7 +110,6 @@ class BuildContext(
 
         private const val GOSN_CLASS_NAME = "com.google.gson.Gson"
 
-
         private val behaviors = ArrayMap<String, Behavior>()
 
         init {
@@ -127,7 +134,7 @@ class BuildContext(
         }
 
         @JvmStatic
-        fun build(
+        fun buildLayout(
                 c: ComponentContext,
                 document: Document,
                 bind: Any?
@@ -151,17 +158,20 @@ class BuildContext(
                 val gson = gsonType.newInstance()
                 var type: Class<*> = o.javaClass
                 val input: Any
-                if (o is InputStream) {
-                    input = InputStreamReader(o)
-                    type = Reader::class.java
-                } else if (o is ByteArray) {
-                    input = InputStreamReader(ByteArrayInputStream(o))
-                    type = Reader::class.java
-                } else if (o is File) {
-                    input = InputStreamReader(FileInputStream(o))
-                    type = Reader::class.java
-                } else {
-                    input = o;
+                when (o) {
+                    is InputStream -> {
+                        input = InputStreamReader(o)
+                        type = Reader::class.java
+                    }
+                    is ByteArray -> {
+                        input = InputStreamReader(ByteArrayInputStream(o))
+                        type = Reader::class.java
+                    }
+                    is File -> {
+                        input = InputStreamReader(FileInputStream(o))
+                        type = Reader::class.java
+                    }
+                    else -> input = o
                 }
                 @Suppress("UNCHECKED_CAST")
                 return gsonType.getMethod("fromJson", type, Class::class.java)

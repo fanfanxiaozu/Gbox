@@ -3,6 +3,7 @@ package com.guet.flexbox.build
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import androidx.collection.ArrayMap
 import com.facebook.litho.Component
 import com.facebook.yoga.YogaAlign
@@ -161,11 +162,20 @@ internal abstract class Factory<T : Component.Builder<*>> : Behavior {
                         borderColor
                 )
             } catch (e: Exception) {
-                val url = c.getValue(backgroundValue, String::class.java, "")
-                if (url.isNotEmpty()) {
+                val backgroundRaw = c.scope(orientations) {
+                    c.getValue(backgroundValue, Any::class.java, Unit)
+                }
+                if (backgroundRaw is Drawable) {
+                    background = BorderDrawable(
+                            backgroundRaw,
+                            borderRadius.toFloat(),
+                            borderWidth.toFloat(),
+                            borderColor
+                    )
+                } else if (backgroundRaw is CharSequence && backgroundRaw.isNotEmpty()) {
                     background = AsyncDrawable(
                             c.componentContext.androidContext,
-                            url,
+                            backgroundRaw,
                             borderRadius.toFloat(),
                             borderWidth.toFloat(),
                             borderColor
@@ -237,5 +247,18 @@ internal abstract class Factory<T : Component.Builder<*>> : Behavior {
         mappings[name] = { c, value ->
             action(c.getColor(value, fallback))
         }
+    }
+
+    companion object {
+        private val orientations: Map<String, GradientDrawable.Orientation> = mapOf(
+                "t2b" to GradientDrawable.Orientation.TOP_BOTTOM,
+                "tr2bl" to GradientDrawable.Orientation.TR_BL,
+                "r2l" to GradientDrawable.Orientation.RIGHT_LEFT,
+                "br2tl" to GradientDrawable.Orientation.BR_TL,
+                "b2t" to GradientDrawable.Orientation.BOTTOM_TOP,
+                "bl2tr" to GradientDrawable.Orientation.BL_TR,
+                "l2r" to GradientDrawable.Orientation.LEFT_RIGHT,
+                "tl2br" to GradientDrawable.Orientation.TL_BR
+        )
     }
 }
