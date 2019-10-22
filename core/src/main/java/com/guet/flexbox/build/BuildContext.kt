@@ -66,8 +66,8 @@ class BuildContext(
 
     companion object {
 
-        private val colorNameMap = object: ArrayMap<String, Any>() {
-            override fun put(key: String?, value: Any?): Any? {
+        private val colorNameMap = object: HashMap<String, Any>() {
+            override fun put(key: String, value: Any): Any? {
                 return super.put(key, when (value) {
                     is Int -> "#" + value.toString(16)
                     is Long -> "#" + value.toInt().toString(16)

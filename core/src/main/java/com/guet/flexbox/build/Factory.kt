@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import androidx.collection.ArrayMap
 import com.facebook.litho.Component
 import com.facebook.yoga.YogaAlign
 import com.facebook.yoga.YogaEdge
@@ -16,10 +15,11 @@ import com.guet.flexbox.widget.NoOpDrawable
 import org.dom4j.Attribute
 import org.dom4j.Element
 import java.util.*
+import kotlin.collections.HashMap
 
 internal abstract class Factory<T : Component.Builder<*>> : Behavior {
 
-    private val mappings = ArrayMap<String, T.(BuildContext, String) -> Unit>()
+    private val mappings = HashMap<String, T.(BuildContext, String) -> Unit>()
 
     init {
         value("width") {
